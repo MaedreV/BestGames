@@ -1,0 +1,67 @@
+---
+title: "Best Games and Your Genres"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+   
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(gt)
+library(viridis)
+library(htmltools)
+library(tidyverse)
+library(highcharter)
+library(dtplyr)
+```
+
+```{r}
+BestGamesIMDB <- read_csv("Top 1000 games of all time.csv", show_col_types = FALSE)
+```
+
+```{r}
+BestGamesMetaC <- read_csv("all_games.csv", show_col_types = FALSE)
+
+BestGamesMetaC <- BestGamesMetaC %>%  distinct(name, .keep_all = TRUE) %>% rename(Score = "meta_score")
+BestGamesMetaC <- BestGamesMetaC %>%  distinct(name, .keep_all = TRUE) %>% rename(Reviews = "user_review")
+```
+
+
+
+
+
+
+Column {.tabset .tabset-fade data-width=650}
+-----------------------------------------------------------------------
+
+### Best Games From IMDB users
+
+```{r}
+#Colors
+custom_colors <- viridis::magma(n = 15)
+#Best gmaes by votes imdb
+BestGamesIMDB %>% group_by(Name) %>% summarise(Votes = sum(Votes)) %>% arrange(desc(Votes)) %>% head(15) %>%  hchart("column", hcaes(x = Name, y = Votes, color = custom_colors)) %>% hc_add_theme(hc_theme_google()) %>% hc_tooltip(pointFormat = "<b>Number of Votes: </b> {point.y} <br>") %>% hc_title(text = "Best Games From IMDB users", style = list(fontSize = "25px", fontWeight = "bold")) %>%  hc_subtitle(text = "By number of Votes", style = list(fontSize = "14px")) 
+```
+### Best Games from MetaCritic
+```{r}
+#Colors
+custom_colors <- viridis::rocket(n = 15)
+#Best gmaes by votes imdb
+BestGamesMetaC %>% group_by(name) %>% summarise(Score = sum(Score)) %>% arrange(desc(Score)) %>% head(15) %>%  hchart("bar", hcaes(x = name, y = Score, color = custom_colors)) %>% hc_add_theme(hc_theme_google()) %>% hc_tooltip(pointFormat = "<b>Number of Score: </b> {point.y} <br>") %>% hc_title(text = "Best Games From MetaCritic Score", style = list(fontSize = "25px", fontWeight = "bold")) %>%  hc_subtitle(text = "By number of Score", style = list(fontSize = "14px")) 
+```
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### {.no-padding}
+
+```{r}
+custom_colors <- viridis::turbo(n = 118)
+
+BestGamesIMDB %>%  group_by(Genre) %>% summarise(count = n()) %>% hchart("pie", hcaes(x = Genre, y = count, color = custom_colors)) %>% hc_add_theme(hc_theme_google()) %>% hc_tooltip(pointFormat = "<b>Proportion: </b> {point.percentage:,.2f}%") %>% hc_title(text = "Genre of Games", style = list(fontSize = "15px", fontWeight = "bold")) 
+```
+
+
+
